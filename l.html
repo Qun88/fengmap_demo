@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script>
+        window.onload = function () {
+            var watchID = navigator.geolocation.watchPosition(function (position) {
+                //document.write(position);
+                console.log(position);
+                var info = document.getElementById('info');
+                info.innerHTML = 'lat:' + position.coords.latitude + '<br />' + 'lon:' +  position.coords.longitude + '<br />' + 'accuracy:' + position.coords.accuracy;
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <label for="" id='info'></label>
+</body>
+
+</html>

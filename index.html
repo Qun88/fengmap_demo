@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="renderer" content="ie-stand">
+    <title>Document</title>
+    <style>
+        html {
+            height: 100%;
+            margin: 0;
+
+        }
+
+        body {
+            height: 100%;
+            margin: 0;
+            /* background-color: red; */
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        ul {
+            position: absolute;
+        }
+
+        button {
+            font-family: "Noto Sans CJK SC", arial, sans-serif;
+            font-size: 14px;
+        }
+    </style>
+    <!-- <script src="./lib/2.3/fengmap.min.js"></script> -->
+    <script>
+
+        var cfg = Array();
+        cfg['洋泾'] = { theme: 'lcm-map1', mapId: 'lcm-map1', appkey: '57ca2fc13d0611acee66825262b60096', appname: '洋泾地图' }
+        cfg['昊商'] = { theme: 'hsyt', mapId: 'hsyt', appkey: 'befe1d6ac92cff932a77ac9f9e37fb5s', appname: '昊商化工' }
+        cfg['蜂鸟'] = { theme: '2001', mapId: '90873', appkey: '040acddf7ae1f66d44b3ab55acf976be', appname: '蜂鸟研发SDK_2_0' }
+        cfg['真趣'] = { theme: 'f200753', mapId: 'f200753', appkey: 'f17693d4dd87b190174800ca3aecc5fb', appname: '苏州第九人民医院' }
+        cfg['格灵'] = { theme: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', mapId: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', appkey: 'b3f9d825824794e592af41af2f86c432', appname: '新办公楼' }
+        cfg['七'] = { theme: 'h147464', mapId: 'h147464', appkey: 'dc79e0d67dbfba37ce963fa01f49f41f', appname: '光享导诊' }
+        var _user = '蜂鸟'
+
+        document.addEventListener("visibilitychange", function () {
+
+            if (document.visibilityState == 'visible') {
+                //map.allowRender = true;
+            } else {
+                //map.allowRender = false;
+            }
+        });
+
+        function resetScale() {
+
+        }
+
+
+        function testEvent() {
+            window.onmouseup = function () {
+                console.log('mouse up!');
+            };
+            window.onmousedown = function () {
+                console.log('mouse down!');
+            };
+        }
+
+        window.onload = function () {
+            RequestLibrary();
+            //initFengmap();
+            //testEvent();
+
+        }
+
+        var mapId = cfg[_user].mapId
+
+        var map;
+        var navigation;
+        var naviResult;
+        var _t;
+
+        function initFengmap() {
+            map = new fengmap.FMMap({
+                container: document.getElementById('container'),
+                appName: cfg[_user].appname,
+                key: cfg[_user].appkey,
+                //defaultVisibleGroups: [1],
+                /* focusAlphaMod: false,
+                focusAlpha: 1, */
+                mapServerURL: './data/' + mapId,
+                mapThemeURL: './data/' + mapId,
+                defaultThemeName: cfg[_user].theme,
+                defaultViewMode: fengmap.FMViewMode.MODE_3D,
+                defaultMapScaleLevel: 19,
+                tile: false,
+                defaultMapScale: 1800,
+                lazyCreateMode: true,
+                //useStoreApply: true,
+                mapScaleLevelRange: [1, 29],
+                //楼层切换时，自动释放资源避免内存占用升高
+                autoDispose: false,
+                focusAlphaMode: true,
+                focusAlpha: .3,
+                focusAnimateMode: false,
+                viewModeAnimateMode: true,
+                modelSelectedEffect: true,
+                moveToAnimationMode: true,
+                compassSize: 32,
+                compassOffset: [-20, 20],
+                compassPosition: fengmap.FMControlPosition.RIGHT_TOP,
+                enabledPanRange: true,
+                defaultTiltAngle: 45,
+                defaultMinTiltAngle: 30,
+                /* defaultBackgroundColor: 0xff0000, */
+                defaultBackgroundAlpha: 1
+            });
+
+            map.openMapById(mapId, function (err) {
+
+            })
+
+            map.on('loadComplete', function () {
+                if (map.maxFps) {
+                    map.maxFps = 24;
+                }
+                map.rotateAngle = 0;
+                map.groupSpace = 5;
+                map.visibleGroupIDs = map.groupIDs;
+                for (let index = 0; index < map.groupIDs.length; index++) {
+                    map.getFMGroup(map.groupIDs[index]).layers["label"][0].visible = false
+                }
+            })
+
+        }
+
+        var _types = [];
+
+        function testControl() {
+            var ctrlOpts = {
+                alllayers: true,
+                showBtnCount: 6,
+                position: fengmap.FMControlPosition.RIGHT_TOP,
+                offset: { x: -40, y: 90 },
+                //imgURL: ''
+            }
+            var control = new fengmap.FMButtonGroupsControl(map, ctrlOpts);
+            control.expand = true;
+            control.enableExpand = true;
+        }
+
+        function testTraverse(map, groupID, layerName) {
+            map.getFMGroup(groupID).layers[layerName][0].traverse(function (model) {
+                if (!_types.includes(model.typeID)) {
+                    _types.push(model.typeID);
+                }
+
+                if (model.typeID < 200000) {
+                    model.setColor('#ff0000', 0.9);
+                    model.addStoreImage({ mapCoord: model.mapCoord, image: '../../walf.png', size: [10, 5], angle: map.rotateAngle });
+                } else {
+                    model.setColor('#00ff00', 0.9);
+                }
+            });
+
+            console.log(_types);
+        }
+
+        var im;
+
+        function testVastImageMarkers(num) {
+            for (let index = 0; index < num; index++) {
+                let randomMapCoord = GetRandomMapCoord(map);
+                addImageMarker(randomMapCoord);
+            }
+        }
+
+        function rotateTo(angle) {
+
+            //控制输入值的范围
+            if (angle > 360 || angle < -360) {
+                console.log('非法');
+                return;
+            }
+
+            let _a = map.rotateAngle;
+            if (_a < 0) {
+                _a += 360;
+            }
+        }
+
+        function addImageMarker(mapCoord) {
+            im = new fengmap.FMImageMarker({
+                x: mapCoord.x,
+                y: mapCoord.y,
+                url: '',
+                size: '32',
+                height: 5.5,
+                depth: true,
+                //anchor: fengmap.FMMarkerAnchor.BOTTOM
+            });
+            im.avoid(false);
+            //testTextMarker(mapCoord.x, mapCoord.y, 2.2);
+
+            let layer = map.getFMGroup(map.focusGroupID).getOrCreateLayer('imageMarker');
+            layer.addMarker(im);
+            im.alwaysShow(false);
+        }
+
+        function testCrashWhenChangeGroup() {
+            map.focusGroupID++
+            testLocationMarker();
+            map.moveTo({ x: lm.x, y: lm.y, groupID: map.focusGroupID });
+        }
+
+        var lm;
+
+        function testLocationMarker() {
+            lm = new fengmap.FMLocationMarker({
+                x: map.center.x + 15,
+                y: map.center.y + 15,
+                url: './car.png',
+                groupID: map.focusGroupID,
+                size: 64,
+                height: 0,
+                callback: function () { },
+            });
+            map.addLocationMarker(lm);
+        }
+
+        function TestVastLocationMarkers(num, autoMove) {
+            for (let index = 0; index < num; index++) {
+                //let randomMapCoord = GetRandomMapCoord(map);
+                let randomMapCoord = { x: map.center.x, y: map.center.y };
+                addLocationMarker(randomMapCoord, autoMove);
+            }
+        }
+        var naviIndex = 1;
+        function _addLocationMarker(mapCoord, autoMove) {
+            _lm = new fengmap.FMLocationMarker({
+                x: mapCoord.x,
+                y: mapCoord.y,
+                url: './b.png',
+                groupID: map.focusGroupID,
+                size: 64,
+                height: 0,
+                callback: function () {
+                    if (autoMove) {
+                        setInterval(function () {
+                            var _mapCoord = GetRandomMapCoord(map);
+                            var offsetP = navigation.naviConstraint({ x: this.naviResult[naviIndex].x + 1, y: this.naviResult[naviIndex].y + 1, groupID: map.focusGroupID });
+                            console.log('offsetP:', offsetP);
+                            console.log('offsetP-or:', this.naviResult[naviIndex]);
+                            var m2 = navigation.locate({ x: offsetP.x, y: offsetP.y, groupID: map.focusGroupID });
+                            _lm.moveTo({ x: offsetP.coord.x, y: offsetP.coord.y, time: 0.5, callback: function () { }, update: function () { } });
+                            _lm.setPosition({ x: offsetP.coord.x, y: offsetP.coord.y, groupID: 1, height: 3 });
+                            naviIndex++;
+                        }, 1500)
+                    }
+                },
+            });
+            map.addLocationMarker(_lm);
+            _lm.alwaysShow();
+        }
+
+        var _lineMarker;
+
+        function testLineMarker() {
+            _lineMarker = new fengmap.FMLineMarker();
+            let seg = new fengmap.FMSegment();
+            seg.groupId = map.focusGroupID;
+            seg.points = [{ x: map.center.x, y: map.center.y, z: 0 }, { x: map.center.x, y: map.center.y, z: 0 }];
+            _lineMarker.addSegment(seg);
+            map.drawLineMark(_lineMarker, {
+                lineWidth: 8, alpha: 1, lineType: fengmap.FMLineType.FULL, color: '#FF0000'
+            });
+        }
+
+        function addLocationMarker(mapCoord, autoMove) {
+            let _lm = new fengmap.FMLocationMarker({
+                x: mapCoord.x,
+                y: mapCoord.y,
+                url: './b.png',
+                groupID: map.focusGroupID,
+                size: 64,
+                height: 0,
+                callback: function () {
+                    if (autoMove) {
+                        setInterval(function () {
+                            var _mapCoord = GetRandomMapCoord(map);
+                            _lm.moveTo({ x: _mapCoord.x, y: _mapCoord.y, time: 9, callback: function () { }, update: function () { } });
+                        }, 1500)
+                    }
+                },
+            });
+            map.addLocationMarker(_lm);
+            _lm.alwaysShow();
+        }
+
+        function removeLocationMarker(lm) {
+            map.removeLocationMarker(lm);
+        }
+
+        function removeTextMarker(tm) {
+            layer.remove(tm);
+        }
+
+        function GetRandomMapCoord(map) {
+
+            function Random(min, max) {
+                return Math.floor(Math.random() * (max - min)) === min ? (min + 1) : Math.floor(Math.random() * (max - min)) + min;
+            }
+
+            let x = Random(map.minX, map.maxX);
+            let y = Random(map.minY, map.maxY);
+
+            return { x: x, y: y }
+        }
+
+        function switchViewMode() {
+            if (map.viewMode == fengmap.FMViewMode.MODE_3D) {
+                map.viewMode = fengmap.FMViewMode.MODE_2D;
+            } else {
+                map.viewMode = fengmap.FMViewMode.MODE_3D
+            }
+        }
+
+        var tm;
+        var layer;
+
+        function addMutilLineTextMarker() {
+            demoTextMarker(map.center.x, map.center.y, 3);
+        }
+
+        /* 定制 textMarker  */
+        function demoTextMarker(x, y, h, model) {
+            tm = new fengmap.FMTextMarker({
+                x: x,
+                y: y,
+                fontsize: 16,
+                height: h,
+                alpha: 1,
+                strokecolor: "",
+                /* strokewidth: 1.5, */
+                fillcolor: "10,10,10",
+                content: [
+                    { text: 'First line text.', fontsize: 16, fontcolor: '#ff0000' },
+                    { text: 'Second line text.', fontsize: 20, fontcolor: '#00ff00' },
+                    { text: 'Third line text.', fontsize: 24, fontcolor: '#0000ff' }
+                ],
+                scale: 1.0
+            }, model);
+            console.log(model);
+            layer = map.getFMGroup(map.focusGroupID).getOrCreateLayer('textMarker');
+            layer.addMarker(tm);
+        }
+
+        var dm;
+        function testDomMarker(mapCoord, height) {
+            dm = new fengmap.FMDomMarker({
+                x: mapCoord.x,
+                y: mapCoord.y,
+                anchor: fengmap.FMMarkerAnchor.BOTTOM,
+                height: height,
+                domContent: '<div style="background-color:red"></div>',
+                id: '111',
+                domWidth: '32',
+                domHeight: '32'
+            });
+
+            var layer = map.getFMGroup(map.focusGroupID).getOrCreateLayer('domMarker');
+            layer.addMarker(dm);
+            layer.remove(dm);
+        }
+
+        function testTextMarker(x, y, h) {
+            tm = new fengmap.FMTextMarker({
+                x: x,
+                y: y,
+                name: 'First Line%rn%Second Line%rn%Second Line%rn%Second Line%rn%Second Line',
+                fontsize: 16,
+                height: h,
+                alpha: 0.1,
+                strokecolor: "",
+                strokewidth: 1.0,
+                fillcolor: "10,10,10",
+                depth: true,
+                platecolor: 0xff0000,
+                //platestorkcolor:0x0000ff
+
+            });
+            tm.avoid(false);
+            layer = map.getFMGroup(map.focusGroupID).getOrCreateLayer('textMarker');
+            layer.addMarker(tm);
+        }
+
+        function up() {
+            if (map.focusGroupID !== map.groupIDs.length) {
+                //map.visibleGroupIDs = [map.focusGroupID + 1]
+                map.focusGroupID = map.focusGroupID + 1;
+                //testLocationMarker();
+            }
+            else
+                alert('top');
+        }
+
+        function down() {
+            if (map.focusGroupID !== 1) {
+                //map.visibleGroupIDs = [map.focusGroupID - 1]
+                map.focusGroupID = map.focusGroupID - 1;
+                //testLocationMarker();
+            }
+            else
+                alert('bottom');
+        }
+
+        var _serachResult;
+
+        function testSearch(keywords, type) {
+            var search = new fengmap.FMSearchAnalyser(map);
+            search.query({
+                keyword: keywords,
+                nodeType: type,
+                groupID: map.groupIDs
+            }, function (result) {
+                console.log(result);
+                for (let index = 0; index < result.length; index++) {
+                    const element = result[index];
+                    addImageMarker(element.target.mapCoord);
+                }
+            });
+        }
+
+        function RequestLibrary() {
+            try {
+                let queryString = location.search;
+                let params = new URLSearchParams(queryString);
+                let requestLibVersion = params.get('ver');
+                let libUrl;
+
+                if (!requestLibVersion) {
+                    return;
+                } else {
+                    switch (requestLibVersion) {
+                        case '2.2':
+                            libUrl = './lib/2.2/fengmap.min.js'
+                            break;
+                        case '2.3':
+                            libUrl = './lib/2.3/fengmap.min.js'
+                            break;
+                        case '2.0':
+                            libUrl = './lib/2.0/fengmap.min.js'
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                let httpRequest = new XMLHttpRequest();
+                if (httpRequest) {
+                    httpRequest.onreadystatechange = function () {
+                        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                            let script = document.createElement("script");
+                            script.type = 'text/javascript';
+                            script.src = libUrl;
+                            script.onload = function () {
+                                console.warn('fengmap SDK ' + fengmap.VERSION + '.' + fengmap.BUILD + ' has been loaded.');
+                                document.title = fengmap.VERSION + '.' + fengmap.BUILD;
+                                initFengmap();
+                            };
+                            document.body.appendChild(script);
+                        }
+                    }
+                    httpRequest.open('GET', libUrl);
+                    httpRequest.send();
+                }
+            } catch (error) {
+
+            }
+
+        }
+
+        var heatmap;
+        function testHeatmap() {
+            heatmap = fengmap.FMHeatMap.create(map, {
+                opacity: 0.0,
+                gradient: {
+                    0.45: "rgb(255,255,255)",
+                    0.55: "rgb(0,255,255)",
+                    0.65: "rgb(0,255,0)",
+                    0.95: "rgb(255,255,0)",
+                    1.0: "rgb(255,0,0)"
+                }
+            });
+            heatmap.randomPoints(200);
+            let group = map.getFMGroup(map.focusGroupID);
+            group.applyHeatMap(heatmap);
+        }
+
+        function removeHeatMap() {
+            let group = map.getFMGroup(map.focusGroupID);
+            group.removeHeatMap(heatmap);
+        }
+
+        function testPolygonMarker() {
+            var polygon = new fengmap.FMPolygonMarker({
+                color: 0x003aff,
+                alpha: .3,
+                lineWidth: .0,
+                height: 3,
+                points: {
+                    type: 'circle',
+                    center: {
+                        x: map.center.x,
+                        y: map.center.y
+                    },
+                    radius: 10,
+                    segments: 100
+                }
+            });
+
+            let group = map.getFMGroup(map.focusGroupID);
+            let layer = group.getOrCreateLayer('polygonMarker');
+            layer.addMarker(polygon);
+            polygon.setLineWidth(0);
+            return polygon;
+        }
+
+        window.ontouchstart = function () {
+            info.innerText = ('strat');
+        }
+
+        window.ontouchmove = function () {
+            info.innerText = ('touching...');
+        }
+
+        window.ontouchend = function () {
+            info.innerText = ('end');
+        }
+
+        var dm, dmLayer;
+
+        function add3DObject(mapCoord) {
+            /* 初始化模型层 */
+            if (!dmLayer) {
+                dmLayer = new fengmap.FMDynamicModelLayer();
+                map.getFMGroup(map.focusGroupID).addLayer(dmLayer);
+            }
+
+            /* 添加模型 */
+            dm = new fengmap.FMDynamicModel(map, {
+                url: './truck.glb', coord: mapCoord, callback: () => {
+
+                }
+            });
+            dmLayer.addNodes(dm);
+        }
+
+        function test3DObject(num) {
+            for (let index = 0; index < num; index++) {
+                var coord = GetRandomMapCoord(map);
+                add3DObject(coord);
+            }
+        }
+
+    </script>
+</head>
+
+<body>
+    <ul>
+        <li><button id="up" onclick="up();">↑</button></li>
+        <li><button id="down" onclick="down();">↓</button></li>
+        <li><button id="viewMode" onclick="switchViewMode();">切换</button></li>
+        <label for="" id='info'></label>
+    </ul>
+    <div id="container"></div>
+</body>
+
+</html>
