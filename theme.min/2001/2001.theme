@@ -1,0 +1,111 @@
+{
+    "version": 2,
+    "viewtheme": {
+        "clearcolor": "255,255,255",
+        "clearalpha": "1.0"
+    },
+    "storetheme": [
+        {
+            "id": "0",
+            "color": "255,255,255",
+            "alpha": "1.0",
+            "strokecolor": "155,155,155",
+            "strokewidth": "1.0",
+            "image": ""
+        },
+        {
+            "id": "1",
+            "color": "255,255,255",
+            "alpha": "1.0",
+            "strokecolor": "155,155,155",
+            "strokewidth": "1.0",
+            "image": ""
+        },
+        {
+            "id": "2",
+            "color": "255,255,255",
+            "alpha": "1.0",
+            "strokecolor": "255,255,255",
+            "strokewidth": "1.0",
+            "image": "../../walf.png",
+            "angle":"90.0"
+        }
+    ],
+    "floorapply": [
+        {
+            "typeapple": [],
+            "floorid": "0"
+        }
+    ],
+    "storeapply": [
+    ],
+    "polygontheme": [],
+    "floorpolygonapply": [],
+    "polygonapply": [],
+    "extenttheme": [
+        {
+            "id": "0",
+            "color": "255,255,255",
+            "alpha": "1.0"
+        }
+    ],
+    "floorextentapply": [],
+    "extentapply": [],
+    "storelabeltheme": [
+        {
+            "id": "0",
+            "fillcolor": "255,255,255",
+            "strokecolor": "",
+            "strokewidth": "1.0",
+            "alpha": "1",
+            "fontsize": "14",
+            "image": "",
+            "platecolor":"0,0,0"
+        }
+    ],
+    "floorstorelabelapply": [
+        {
+            "floorid": "0",
+            "typeapply": [
+                {
+                    "type": "0",
+                    "normalid": "0",
+                    "selectedid": "1"
+                }
+            ]
+        }
+    ],
+    "storelabelapply": [
+        {
+            "floorid": "1",
+            "nameapply": []
+        }
+    ],
+    "poiimagetheme": [
+        {
+            "id": "0",
+            "imagename": "0.fmi",
+            "height": "22"
+        }
+    ],
+    "floorpoiimageapply": [
+        {
+            "floorid": "0",
+            "typeapply": [
+                {
+                    "type": "0",
+                    "normalid": "0",
+                    "selectedid": "0"
+                }
+            ]
+        }
+    ],
+    "poiimageapply": [
+        {
+            "floorid": "0",
+            "nameapply": [
+                {}
+            ]
+        }
+    ]
+}
