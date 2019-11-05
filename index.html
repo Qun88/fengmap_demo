@@ -43,7 +43,8 @@
         cfg['真趣'] = { theme: 'f200753', mapId: 'f200753', appkey: 'f17693d4dd87b190174800ca3aecc5fb', appname: '苏州第九人民医院' }
         cfg['格灵'] = { theme: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', mapId: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', appkey: 'b3f9d825824794e592af41af2f86c432', appname: '新办公楼' }
         cfg['七'] = { theme: 'h147464', mapId: 'h147464', appkey: 'dc79e0d67dbfba37ce963fa01f49f41f', appname: '光享导诊' }
-        var _user = '蜂鸟'
+        cfg['BBA'] = { theme: 'nbs', mapId: 'nbs', appkey: '804deeb2f40bba722affc5acc645909a', appname: 'DILO' }
+        var _user = 'BBA'
 
         document.addEventListener("visibilitychange", function () {
 
@@ -90,10 +91,10 @@
                 //defaultVisibleGroups: [1],
                 /* focusAlphaMod: false,
                 focusAlpha: 1, */
-                mapServerURL: './data/' + mapId,
-                mapThemeURL: './data/' + mapId,
+                //mapServerURL: './data/' + mapId,
+                //mapThemeURL: './data/' + mapId,
                 defaultThemeName: cfg[_user].theme,
-                defaultViewMode: fengmap.FMViewMode.MODE_3D,
+                defaultViewMode: fengmap.FMViewMode.MODE_2D,
                 defaultMapScaleLevel: 19,
                 tile: false,
                 defaultMapScale: 1800,
@@ -131,18 +132,19 @@
                 map.visibleGroupIDs = map.groupIDs;
                 for (let index = 0; index < map.groupIDs.length; index++) {
                     map.getFMGroup(map.groupIDs[index]).layers["label"][0].visible = false
+                    map.getFMGroup(map.groupIDs[index]).layers["facility"][0].visible = false
                 }
             })
 
             map.on('mapClickNode', function (event) {
-                console.log(event.target);
+                console.log(event.target,event.target.typeID);
             });
 
             map.pickFilterFunction = function (event) {
-                if (event.nodeType == fengmap.FMNodeType.MODEL &&
+                /* if (event.nodeType == fengmap.FMNodeType.MODEL &&
                     event.typeID == 160100) {
                     return false;
-                }
+                } */
                 return true;
             };
 

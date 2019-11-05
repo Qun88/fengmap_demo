@@ -18,7 +18,7 @@
             "color": "255,255,255",
             "alpha": "1.0",
             "strokecolor": "155,155,155",
-            "strokewidth": "1.0",
+            "strokewidth": "0.0",
             "image": ""
         },
         {
@@ -28,17 +28,29 @@
             "strokecolor": "255,255,255",
             "strokewidth": "1.0",
             "image": "../../walf.png",
-            "angle":"90.0"
+            "angle": "90.0"
+        },
+        {
+            "id": "3",
+            "color": "255,0,0",
+            "alpha": "1.0",
+            "strokecolor": "255,255,255",
+            "strokewidth": "1.0"
         }
     ],
     "floorapply": [
         {
-            "typeapple": [],
-            "floorid": "0"
+            "floorid": "1",
+            "typeapple": [
+                {
+                    "normalid": "3",
+                    "selectedid": "1",
+                    "type": "200111"
+                }
+            ]
         }
     ],
-    "storeapply": [
-    ],
+    "storeapply": [],
     "polygontheme": [],
     "floorpolygonapply": [],
     "polygonapply": [],
@@ -60,7 +72,7 @@
             "alpha": "1",
             "fontsize": "14",
             "image": "",
-            "platecolor":"0,0,0"
+            "platecolor": "0,0,0"
         }
     ],
     "floorstorelabelapply": [
