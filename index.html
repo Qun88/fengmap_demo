@@ -39,12 +39,12 @@
         var cfg = Array();
         cfg['洋泾'] = { theme: 'lcm-map1', mapId: 'lcm-map1', appkey: '57ca2fc13d0611acee66825262b60096', appname: '洋泾地图' }
         cfg['昊商'] = { theme: 'hsyt', mapId: 'hsyt', appkey: 'befe1d6ac92cff932a77ac9f9e37fb5s', appname: '昊商化工' }
-        cfg['蜂鸟'] = { theme: '2001', mapId: '90873', appkey: '040acddf7ae1f66d44b3ab55acf976be', appname: '蜂鸟研发SDK_2_0' }
+        cfg['蜂鸟'] = { theme: '2001', mapId: '10347', appkey: '040acddf7ae1f66d44b3ab55acf976be', appname: '蜂鸟研发SDK_2_0' }
         cfg['真趣'] = { theme: 'f200753', mapId: 'f200753', appkey: 'f17693d4dd87b190174800ca3aecc5fb', appname: '苏州第九人民医院' }
         cfg['格灵'] = { theme: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', mapId: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', appkey: 'b3f9d825824794e592af41af2f86c432', appname: '新办公楼' }
         cfg['七'] = { theme: 'h147464', mapId: 'h147464', appkey: 'dc79e0d67dbfba37ce963fa01f49f41f', appname: '光享导诊' }
         cfg['BBA'] = { theme: 'nbs', mapId: 'nbs', appkey: '804deeb2f40bba722affc5acc645909a', appname: 'DILO' }
-        var _user = 'BBA'
+        var _user = '蜂鸟'
 
         document.addEventListener("visibilitychange", function () {
 
@@ -94,8 +94,8 @@
                 //mapServerURL: './data/' + mapId,
                 //mapThemeURL: './data/' + mapId,
                 defaultThemeName: cfg[_user].theme,
-                defaultViewMode: fengmap.FMViewMode.MODE_2D,
-                defaultMapScaleLevel: 19,
+                defaultViewMode: fengmap.FMViewMode.MODE_3D,
+                defaultMapScaleLevel: 23,
                 tile: false,
                 defaultMapScale: 1800,
                 lazyCreateMode: true,
@@ -112,7 +112,7 @@
                 compassSize: 32,
                 compassOffset: [-20, 20],
                 compassPosition: fengmap.FMControlPosition.RIGHT_TOP,
-                enabledPanRange: true,
+                enabledPanRange: false,
                 defaultTiltAngle: 45,
                 defaultMinTiltAngle: 30,
                 /* defaultBackgroundColor: 0xff0000, */
@@ -123,8 +123,11 @@
 
             })
 
+
+
             map.on('loadComplete', function () {
-                if (map.maxFps) {
+                map.mapScaleLevel = 23;
+                /* if (map.maxFps) {
                     map.maxFps = 24;
                 }
                 map.rotateAngle = 0;
@@ -133,11 +136,16 @@
                 for (let index = 0; index < map.groupIDs.length; index++) {
                     map.getFMGroup(map.groupIDs[index]).layers["label"][0].visible = false
                     map.getFMGroup(map.groupIDs[index]).layers["facility"][0].visible = false
+                } */
+                if (map.maxFps) {
+                    map.maxFps = 24;
                 }
+
+                //testHeatMap(200);
             })
 
             map.on('mapClickNode', function (event) {
-                console.log(event.target,event.target.typeID);
+                console.log(event.target, event.target.typeID);
             });
 
             map.pickFilterFunction = function (event) {
@@ -148,6 +156,31 @@
                 return true;
             };
 
+        }
+
+        function testHeatMap(num) {
+            var options = {
+                radius: 20.0,
+                opacity: 0.0,
+                max: 100.0,
+                gradient: {
+                    0.00: "rgb(0,0,0)",
+                    0.25: "rgb(0,0,255)",
+                    0.50: "rgb(0,255,0)",
+                    0.75: "rgb(255,255,0)",
+                    1.00: "rgb(255,0,0)"
+                }
+            }
+            let heatmap = fengmap.FMHeatMap.create(map, options);
+
+            for (let index = 0; index < num; index++) {
+                var v = Math.random() * 100
+                //console.warn(v);
+                let coord = GetRandomMapCoord(map);
+                heatmap.addPoint(coord.x, coord.y, v);
+            }
+            let floor = map.getFMGroup(map.focusGroupID);
+            floor.applyHeatMap(heatmap);
         }
 
         var _types = [];
@@ -163,6 +196,10 @@
             var control = new fengmap.FMButtonGroupsControl(map, ctrlOpts);
             control.expand = true;
             control.enableExpand = true;
+        }
+
+        function testBox() {
+            setInterval(() => { add3DObject({ x: map.center.x, y: map.center.y + 1.9 }); }, 8000)
         }
 
         function testTraverse(map, groupID, layerName) {
@@ -223,6 +260,25 @@
             im.alwaysShow(false);
         }
 
+        function addImageMarkerById(mapCoord, id) {
+            im = new fengmap.FMImageMarker({
+                x: mapCoord.x,
+                y: mapCoord.y,
+                url: './b.png',
+                size: '32',
+                height: 5.5,
+                depth: true,
+                //anchor: fengmap.FMMarkerAnchor.BOTTOM
+            });
+            im.avoid(false);
+            im.id = id;
+            //testTextMarker(mapCoord.x, mapCoord.y, 2.2);
+
+            let layer = map.getFMGroup(map.focusGroupID).getOrCreateLayer('imageMarker');
+            layer.addMarker(im);
+            im.alwaysShow(false);
+        }
+
         function testCrashWhenChangeGroup() {
             map.focusGroupID++
             testLocationMarker();
@@ -246,8 +302,9 @@
 
         function TestVastLocationMarkers(num, autoMove) {
             for (let index = 0; index < num; index++) {
-                //let randomMapCoord = GetRandomMapCoord(map);
-                let randomMapCoord = { x: map.center.x, y: map.center.y };
+                let randomMapCoord = GetRandomMapCoord(map);
+                //let randomMapCoord = { x: map.center.x, y: map.center.y };
+                console.log(randomMapCoord);
                 addLocationMarker(randomMapCoord, autoMove);
             }
         }
@@ -496,23 +553,6 @@
 
         }
 
-        var heatmap;
-        function testHeatmap() {
-            heatmap = fengmap.FMHeatMap.create(map, {
-                opacity: 0.0,
-                gradient: {
-                    0.45: "rgb(255,255,255)",
-                    0.55: "rgb(0,255,255)",
-                    0.65: "rgb(0,255,0)",
-                    0.95: "rgb(255,255,0)",
-                    1.0: "rgb(255,0,0)"
-                }
-            });
-            heatmap.randomPoints(200);
-            let group = map.getFMGroup(map.focusGroupID);
-            group.applyHeatMap(heatmap);
-        }
-
         function removeHeatMap() {
             let group = map.getFMGroup(map.focusGroupID);
             group.removeHeatMap(heatmap);
@@ -562,14 +602,20 @@
                 dmLayer = new fengmap.FMDynamicModelLayer();
                 map.getFMGroup(map.focusGroupID).addLayer(dmLayer);
             }
-
+            let dm;
             /* 添加模型 */
             dm = new fengmap.FMDynamicModel(map, {
-                url: './truck.glb', coord: mapCoord, callback: () => {
+                url: './box.glb', coord: mapCoord, callback: () => {
+                    dm.setHeight(0.5);
+                    dm.moveTo({
+                        x: map.center.x + 10, y: map.center.y + 1.85, time: 100, callback: function () {
 
+                        }, update: function () { }
+                    });
                 }
             });
             dmLayer.addNodes(dm);
+
         }
 
         function test3DObject(num) {
