@@ -17,7 +17,7 @@
             /* background-color: red; */
         }
 
-        #container {
+        #fengMap {
             width: 100%;
             height: 100%;
             margin: 0;
@@ -40,11 +40,12 @@
         cfg['洋泾'] = { theme: 'lcm-map1', mapId: 'lcm-map1', appkey: '57ca2fc13d0611acee66825262b60096', appname: '洋泾地图' }
         cfg['昊商'] = { theme: 'hsyt', mapId: 'hsyt', appkey: 'befe1d6ac92cff932a77ac9f9e37fb5s', appname: '昊商化工' }
         cfg['蜂鸟'] = { theme: '2001', mapId: '10347', appkey: '040acddf7ae1f66d44b3ab55acf976be', appname: '蜂鸟研发SDK_2_0' }
+        cfg['test'] = { theme: '2001', mapId: '10347', appkey: '040acddf7ae1f66d44b3ab55acf976be', appname: '蜂鸟研发SDK_2_0' }
         cfg['真趣'] = { theme: 'f200753', mapId: 'f200753', appkey: 'f17693d4dd87b190174800ca3aecc5fb', appname: '苏州第九人民医院' }
         cfg['格灵'] = { theme: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', mapId: 'b85a1aa4-aad1-4d6f-b190-bc6402abfe14', appkey: 'b3f9d825824794e592af41af2f86c432', appname: '新办公楼' }
         cfg['七'] = { theme: 'h147464', mapId: 'h147464', appkey: 'dc79e0d67dbfba37ce963fa01f49f41f', appname: '光享导诊' }
         cfg['BBA'] = { theme: 'nbs', mapId: 'nbs', appkey: '804deeb2f40bba722affc5acc645909a', appname: 'DILO' }
-        var _user = '蜂鸟'
+        var _user = 'test'
 
         document.addEventListener("visibilitychange", function () {
 
@@ -83,16 +84,18 @@
         var naviResult;
         var _t;
 
+
+
         function initFengmap() {
             map = new fengmap.FMMap({
-                container: document.getElementById('container'),
+                container: document.getElementById('fengMap'),
                 appName: cfg[_user].appname,
                 key: cfg[_user].appkey,
-                //defaultVisibleGroups: [1],
+                //defaultVisibleGroups: [1,2,3,4,5],
                 /* focusAlphaMod: false,
                 focusAlpha: 1, */
-                //mapServerURL: './data/' + mapId,
-                //mapThemeURL: './data/' + mapId,
+                mapServerURL: './data/' + cfg[_user].mapId,
+                mapThemeURL: './data/theme',
                 defaultThemeName: cfg[_user].theme,
                 defaultViewMode: fengmap.FMViewMode.MODE_3D,
                 defaultMapScaleLevel: 23,
@@ -103,7 +106,7 @@
                 mapScaleLevelRange: [1, 29],
                 //楼层切换时，自动释放资源避免内存占用升高
                 autoDispose: false,
-                focusAlphaMode: true,
+                focusAlphaMode: false,
                 focusAlpha: .3,
                 focusAnimateMode: false,
                 viewModeAnimateMode: true,
@@ -112,11 +115,13 @@
                 compassSize: 32,
                 compassOffset: [-20, 20],
                 compassPosition: fengmap.FMControlPosition.RIGHT_TOP,
-                enabledPanRange: false,
+                enabledPanRange: true,
                 defaultTiltAngle: 45,
-                defaultMinTiltAngle: 30,
+                defaultMinTiltAngle: 0,
                 /* defaultBackgroundColor: 0xff0000, */
-                defaultBackgroundAlpha: 1
+                defaultBackgroundAlpha: 1,
+                defaultGroupSpace: 100,
+                font: { family : '"方正姚体","Microsoft Yahei","微软雅黑",Tahoma,Arial' }
             });
 
             map.openMapById(mapId, function (err) {
@@ -127,6 +132,9 @@
 
             map.on('loadComplete', function () {
                 map.mapScaleLevel = 23;
+                //map.visibleGroupIDs = [1,2,3];
+                //map.focusGroupID = 3;
+                //map.visibleGroups = map.groupIDs;
                 /* if (map.maxFps) {
                     map.maxFps = 24;
                 }
@@ -137,15 +145,21 @@
                     map.getFMGroup(map.groupIDs[index]).layers["label"][0].visible = false
                     map.getFMGroup(map.groupIDs[index]).layers["facility"][0].visible = false
                 } */
-                if (map.maxFps) {
+                /* if (map.maxFps) {
                     map.maxFps = 24;
-                }
+                } */
 
                 //testHeatMap(200);
             })
 
             map.on('mapClickNode', function (event) {
                 console.log(event.target, event.target.typeID);
+            });
+
+            var lastScale;
+            map.on('scaleLevelChanged', function () {
+                map.tiltAngle = map.tiltAngle + 5;
+                console.log(map.mapScaleLevel + ',' + map.tiltAngle);
             });
 
             map.pickFilterFunction = function (event) {
@@ -435,7 +449,7 @@
                 y: mapCoord.y,
                 anchor: fengmap.FMMarkerAnchor.BOTTOM,
                 height: height,
-                domContent: '<div style="background-color:red"></div>',
+                domContent: '<div style="background-color:red">11111111</div>',
                 id: '111',
                 domWidth: '32',
                 domHeight: '32'
@@ -443,15 +457,15 @@
 
             var layer = map.getFMGroup(map.focusGroupID).getOrCreateLayer('domMarker');
             layer.addMarker(dm);
-            layer.remove(dm);
+            //layer.remove(dm);
         }
 
         function testTextMarker(x, y, h) {
             tm = new fengmap.FMTextMarker({
                 x: x,
                 y: y,
-                name: 'First Line%rn%Second Line%rn%Second Line%rn%Second Line%rn%Second Line',
-                fontsize: 16,
+                name: 'First Line 第一行%rn%Second Line%rn%Second Line%rn%Second Line%rn%Second Line',
+                fontsize: 32,
                 height: h,
                 alpha: 0.1,
                 strokecolor: "",
@@ -492,13 +506,15 @@
         function testSearch(keywords, type) {
             var search = new fengmap.FMSearchAnalyser(map);
             search.query({
-                keyword: keywords,
+                FID: keywords,
                 nodeType: type,
                 groupID: map.groupIDs
             }, function (result) {
                 console.log(result);
+                _serachResult = result;
                 for (let index = 0; index < result.length; index++) {
                     const element = result[index];
+                    element.target.label.setText("修改后的名字！！！！ %rn% 换行了");
                     addImageMarker(element.target.mapCoord);
                 }
             });
@@ -605,7 +621,7 @@
             let dm;
             /* 添加模型 */
             dm = new fengmap.FMDynamicModel(map, {
-                url: './box.glb', coord: mapCoord, callback: () => {
+                url: './truck.glb', coord: mapCoord, callback: () => {
                     dm.setHeight(0.5);
                     dm.moveTo({
                         x: map.center.x + 10, y: map.center.y + 1.85, time: 100, callback: function () {
@@ -625,6 +641,10 @@
             }
         }
 
+        function testRoute() {
+
+        }
+
     </script>
 </head>
 
@@ -635,7 +655,7 @@
         <li><button id="viewMode" onclick="switchViewMode();">切换</button></li>
         <label for="" id='info'></label>
     </ul>
-    <div id="container"></div>
+    <div id="fengMap"></div>
 </body>
 
 </html>
